@@ -1,0 +1,49 @@
+stages:
+  - build
+
+variables:
+  BACKEND_IMAGE: $CI_REGISTRY_IMAGE/backend
+  FRONTEND_IMAGE: $CI_REGISTRY_IMAGE/frontend
+  WHATSAPP_IMAGE: $CI_REGISTRY_IMAGE/whatsapp
+
+.docker-build:
+  image: docker:26
+  services:
+    - docker:26-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+build-backend:
+  extends: .docker-build
+  stage: build
+  script:
+    - docker pull $BACKEND_IMAGE:latest || true
+    - docker build --cache-from $BACKEND_IMAGE:latest -t $BACKEND_IMAGE:$CI_COMMIT_SHA -t $BACKEND_IMAGE:latest -f backend/Dockerfile ./backend
+    - docker push $BACKEND_IMAGE:$CI_COMMIT_SHA
+    - docker push $BACKEND_IMAGE:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+build-frontend:
+  extends: .docker-build
+  stage: build
+  script:
+    - docker pull $FRONTEND_IMAGE:latest || true
+    - docker build --cache-from $FRONTEND_IMAGE:latest -t $FRONTEND_IMAGE:$CI_COMMIT_SHA -t $FRONTEND_IMAGE:latest -f frontend/Dockerfile.prod ./frontend
+    - docker push $FRONTEND_IMAGE:$CI_COMMIT_SHA
+    - docker push $FRONTEND_IMAGE:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+build-whatsapp:
+  extends: .docker-build
+  stage: build
+  script:
+    - docker pull $WHATSAPP_IMAGE:latest || true
+    - docker build --cache-from $WHATSAPP_IMAGE:latest -t $WHATSAPP_IMAGE:$CI_COMMIT_SHA -t $WHATSAPP_IMAGE:latest -f whatsapp/Dockerfile ./whatsapp
+    - docker push $WHATSAPP_IMAGE:$CI_COMMIT_SHA
+    - docker push $WHATSAPP_IMAGE:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"

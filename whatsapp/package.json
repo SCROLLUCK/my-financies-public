@@ -1,0 +1,19 @@
+{
+  "name": "my-financies-whatsapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Internal WhatsApp gateway (Baileys) for my-financies — reminders out, receipt/quick-add capture in.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "postinstall": "patch-package"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc13",
+    "express": "^5.2.1",
+    "patch-package": "^8.0.1",
+    "pino": "^10.3.1",
+    "qrcode": "^1.5.4"
+  }
+}
